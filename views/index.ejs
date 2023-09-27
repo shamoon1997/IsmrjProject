@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Property Details</title>
+    <style>
+      table {
+        font-family: Arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Property Details</h1>
+    <table>
+      <tr>
+        <th>Property ID</th>
+        <th>Status</th>
+        <th>Last Update</th>
+        <th>Remaining Time</th>
+        <th>Reserved By</th>
+        <th>Reserved On</th>
+      </tr>
+      <% data.forEach(property => { %>
+      <tr>
+        <td><%= property.propertyId %></td>
+        <td><%= property.status %></td>
+        <td><%= property.lastUpdate %></td>
+        <td><%= property.remainingTime %></td>
+        <td><%= property.reservedBy %></td>
+        <td><%= property.reservedOn %></td>
+      </tr>
+      <% }); %>
+    </table>
+  </body>
+</html>
