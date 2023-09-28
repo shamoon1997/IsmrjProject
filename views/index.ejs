@@ -44,10 +44,10 @@
     <h1>Property Details</h1>
 
     <p>
-      Available: <%= NumberofAvailable %><br />
-      Sold: <%= NumberofSold %><br />
-      Reserved: <%= NumberofReserved %><br />
-      Locked: <%= NumberofLocked %>
+      Disponible: <%= NumberofAvailable %><br />
+      Vendido: <%= NumberofSold %><br />
+      Reservado: <%= NumberofReserved %><br />
+      Bloqueado: <%= NumberofLocked %>
     </p>
 
     <table>
@@ -62,12 +62,17 @@
       <% data.forEach(property => { %>
       <tr class="<%= property.status %>">
         <td><%= property.propertyId %></td>
-        <td><%= property.status %></td>
+        <td>
+          <% if (property.status === 'Available') { %> Disponible <% } else if
+          (property.status === 'Locked') { %> Bloqueado <% } else if
+          (property.status === 'Sold') { %> Vendido <% } else if
+          (property.status === 'Reserved') { %> Reservado <% } %>
+        </td>
         <td><%= property.lastUpdate %></td>
         <td>
-          <span id="remainingTime_<%= property.propertyId %>"
-            ><%= property.remainingTime %></span
-          >
+          <span id="remainingTime_<%= property.propertyId %>">
+            <%= property.remainingTime %>
+          </span>
         </td>
         <td><%= property.reservedBy %></td>
         <td><%= property.reservedOn %></td>
@@ -80,13 +85,12 @@
       elements.forEach((element) => {
         originalTimeArray.push(new Date(element.textContent));
       });
-      // Function to update remaining time every second
+
       function updateRemainingTime() {
         const pacificTime = new Date();
 
         elements.forEach((element, index) => {
-          let originalTime = originalTimeArray[index]; // Store the original Date object
-          console.log(originalTime);
+          let originalTime = originalTimeArray[index];
           let timeDifference = originalTime - pacificTime;
 
           if (!isNaN(timeDifference) && timeDifference > 0) {
