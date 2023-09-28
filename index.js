@@ -18,7 +18,7 @@ app.set('views', __dirname + '/views');
 
 // Connect to MongoDB
 mongoose.connect(
-  'mongodb+srv://shamoon1997:mongodbatlas123@mongopracticestart.vdf7o.mongodb.net/MJTest?retryWrites=true&w=majority',
+  'mongodb+srv://shamoon1997:mongodbatlas123@mongopracticestart.vdf7o.mongodb.net/bnbtest?retryWrites=true&w=majority',
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -67,7 +67,34 @@ const insertPropertyData = async () => {
 app.get('/', async (req, res) => {
   try {
     const properties = await Property.find();
-    res.render('index', { data: properties });
+    const reservedProperties = properties.filter(
+      (property) => property.status.toString().toLowerCase() === 'reserved'
+    );
+
+    const soldProperties = properties.filter(
+      (property) => property.status.toString().toLowerCase() === 'sold'
+    );
+
+    const availableProperties = properties.filter(
+      (property) => property.status.toString().toLowerCase() === 'available'
+    );
+
+    const lockedProperties = properties.filter(
+      (property) => property.status.toString().toLowerCase() === 'locked'
+    );
+
+    res.render('index', {
+      data: [
+        ...reservedProperties,
+        ...soldProperties,
+        ...availableProperties,
+        ...lockedProperties,
+      ],
+      NumberofReserved: reservedProperties.length,
+      NumberofAvailable: availableProperties.length,
+      NumberofSold: soldProperties.length,
+      NumberofLocked: lockedProperties.length,
+    });
   } catch (error) {
     res.status(500).json({
       error: error,
@@ -81,6 +108,7 @@ app.post('/api', async (req, res) => {
   try {
     if (new_status.toString().toLowerCase() === 'reserved') {
       const currentPacificTime = getCurrentPacificTime();
+
       await Property.findOneAndUpdate(
         { propertyId: property },
         {
@@ -92,15 +120,47 @@ app.post('/api', async (req, res) => {
         }
       );
     } else {
-      await Property.findOneAndUpdate(
-        { propertyId: property },
-        {
-          status: new_status,
-          lastUpdate: getCurrentPacificTime(),
+      const foundProperty = await Property.findOne({ propertyId: property });
+      if (foundProperty.status.toString().toLowerCase() == 'reserved') {
+        if (new_status == 'Sold' || new_status == 'Available') {
+          await Property.findOneAndUpdate(
+            { propertyId: property },
+            {
+              $unset: {
+                remainingTime: 1,
+                reservedOn: 1,
+                reservedBy: 1,
+              },
+              $set: {
+                status: new_status,
+                lastUpdate: getCurrentPacificTime(),
+              },
+            }
+          );
+        } else {
+          return res.status(400).json({
+            status: 400,
+            message: 'rejected',
+          });
         }
-      );
+      } else {
+        await Property.findOneAndUpdate(
+          { propertyId: property },
+          {
+            $unset: {
+              remainingTime: 1,
+              reservedOn: 1,
+              reservedBy: 1,
+            },
+            $set: {
+              status: new_status,
+              lastUpdate: getCurrentPacificTime(),
+            },
+          }
+        );
+      }
     }
-    res.status(200).json({
+    return res.status(200).json({
       status: 200,
       message: 'success',
     });
@@ -131,8 +191,18 @@ const updatePropertyStatus = async () => {
       if (new Date(currentPacificTime) >= new Date(property.remainingTime)) {
         // Update property status to available
         await Property.findOneAndUpdate(
-          { propertyId: property.propertyId },
-          { status: 'Available' }
+          { propertyId: property },
+          {
+            $unset: {
+              remainingTime: 1,
+              reservedOn: 1,
+              reservedBy: 1,
+            },
+            $set: {
+              status: 'Available',
+              lastUpdate: getCurrentPacificTime(),
+            },
+          }
         );
         console.log(
           `Property ${property.propertyId} status updated to Available`
