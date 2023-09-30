@@ -13,5 +13,10 @@
       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     }
   ],
-  "schedule": "cron(*/2 * * * *)"
+  "crons": [
+    {
+      "path": "/cron",
+      "schedule": "*/2 * * * *"
+    }
+  ]
 }

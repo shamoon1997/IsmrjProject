@@ -5,6 +5,47 @@ const bodyParser = require('body-parser');
 const { propertyData } = require('./propertyData');
 const { getCurrentPacificTime, addOneDayAndSetThreePM } = require('./utils');
 
+const updatePropertyStatus = async (req, res) => {
+  console.log('running cron job');
+  try {
+    const currentPacificTime = getCurrentPacificTime();
+    const properties = await Property.find();
+
+    for (const property of properties) {
+      if (new Date(currentPacificTime) >= new Date(property.remainingTime)) {
+        // Update property status to available
+        await Property.findOneAndUpdate(
+          { propertyId: property },
+          {
+            $unset: {
+              remainingTime: 1,
+              reservedOn: 1,
+              reservedBy: 1,
+            },
+            $set: {
+              status: 'Available',
+              lastUpdate: getCurrentPacificTime(),
+            },
+          }
+        );
+        console.log(
+          `Property ${property.propertyId} status updated to Available`
+        );
+      }
+    }
+    return res.status(200).json({
+      status: 200,
+      message: 'status updated',
+    });
+  } catch (error) {
+    console.error('Error updating property status:', error);
+    return res.status(500).json({
+      status: 500,
+      message: 'status failed',
+    });
+  }
+};
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +53,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use('/cron', updatePropertyStatus);
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
@@ -175,7 +217,3 @@ app.post('/api', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-module.exports = {
-  Property,
-};
