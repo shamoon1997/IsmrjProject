@@ -13,10 +13,5 @@
       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     }
   ],
-  "functions": {
-    "scheduled-function": {
-      "schedule": "cron(*/2 * * * *)",
-      "runtime": "@vercel/node"
-    }
-  }
+  "schedule": "cron(*/2 * * * *)"
 }
