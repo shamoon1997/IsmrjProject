@@ -7,17 +7,29 @@ function getCurrentPacificTime() {
   return pacificTime;
 }
 
-function addOneDayAndSetThreePM(pacificTime) {
-  const nextDay = new Date(pacificTime);
-  nextDay.setDate(nextDay.getDate() + 1);
-  nextDay.setHours(18, 0, 0, 0); // Set the time to 3 PM
-
-  return nextDay.toLocaleString('en-US', {
+function addOneDayAndSetThreePM() {
+  // Get the current date and time in Pacific Time (PT)
+  const pacificTime = new Date().toLocaleString('en-US', {
     timeZone: 'America/Los_Angeles',
-    hour12: true,
   });
-}
 
+  // Convert the string to a Date object
+  const pacificDateTime = new Date(pacificTime);
+
+  // Add one day
+  pacificDateTime.setDate(pacificDateTime.getDate() + 1);
+
+  // Set the time to 3 PM
+  pacificDateTime.setHours(21, 0, 0, 0);
+
+  // Convert the updated date to a string in the desired format
+  const result = pacificDateTime.toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+  });
+
+  console.log('result: ', result);
+  return result;
+}
 module.exports = {
   getCurrentPacificTime,
   addOneDayAndSetThreePM,

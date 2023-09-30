@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const cron = require('node-cron');
 const bodyParser = require('body-parser');
 const { propertyData } = require('./propertyData');
 const { getCurrentPacificTime, addOneDayAndSetThreePM } = require('./utils');
@@ -17,6 +16,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
 // Connect to MongoDB
+// mongodb+srv://shamoon1997:mongodbatlas123@mongopracticestart.vdf7o.mongodb.net/bnbtest?retryWrites=true&w=majority
 mongoose.connect(
   'mongodb+srv://shamoon1997:mongodbatlas123@mongopracticestart.vdf7o.mongodb.net/bnbtest?retryWrites=true&w=majority',
   {
@@ -174,42 +174,8 @@ app.post('/api', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-
-  // Schedule a cron job to run every two minutes
-  cron.schedule('*/2 * * * *', async () => {
-    console.log('Running cron job...');
-    await updatePropertyStatus();
-  });
 });
 
-const updatePropertyStatus = async () => {
-  try {
-    const currentPacificTime = getCurrentPacificTime();
-    const properties = await Property.find();
-
-    for (const property of properties) {
-      if (new Date(currentPacificTime) >= new Date(property.remainingTime)) {
-        // Update property status to available
-        await Property.findOneAndUpdate(
-          { propertyId: property },
-          {
-            $unset: {
-              remainingTime: 1,
-              reservedOn: 1,
-              reservedBy: 1,
-            },
-            $set: {
-              status: 'Available',
-              lastUpdate: getCurrentPacificTime(),
-            },
-          }
-        );
-        console.log(
-          `Property ${property.propertyId} status updated to Available`
-        );
-      }
-    }
-  } catch (error) {
-    console.error('Error updating property status:', error);
-  }
+module.exports = {
+  Property,
 };
